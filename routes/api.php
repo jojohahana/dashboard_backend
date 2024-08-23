@@ -10,3 +10,9 @@ Route::get('/user', function (Request $request) {
 
 //posts
 Route::apiResource('/posts', App\Http\Controllers\Api\PostController::class);
+
+Route::get('/test', function () {
+    return response()->json(['message' => 'API is working']);
+});
+
+Route::get('/summary', [App\Http\Controllers\Api\lvmdpController::class, 'getSummary']);
