@@ -14,10 +14,18 @@ class lvmdpController extends Controller
         $month = $request->input('month', 5);
 
         $result = DB::table('lvmdp_hours')
-            ->select(DB::raw('SUM(ttlappr_en) as total_energy'))
+            ->select(DB::raw('SUM(ttlexp_actven) as total_energy'))
             ->whereYear('tanggal', $year)
             ->whereMonth('tanggal', $month)
             ->first();
+
+
+        // Debugging
+        if (is_null($result)) {
+            return response()->json()([
+                'total_energy' => 0
+            ]);
+        }
 
         return response()->json([
             'total_energy' => $result ? $result->total_energy : 0
