@@ -3,6 +3,7 @@
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\lvmdpController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -15,4 +16,8 @@ Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
 });
 
-Route::get('/summary', [App\Http\Controllers\Api\lvmdpController::class, 'getSummary']);
+Route::controller(lvmdpController::class)->group(function () {
+    Route::get('/summary', 'getSummary');
+    Route::get('/monthly-summary', 'getMonthlySummary');
+    Route::get('/daily-summary', 'getDailySummary');
+});
