@@ -33,13 +33,13 @@ class lvmdpController extends Controller
         ]);
     }
 
-    // get Summary for Linechart
+    // Get Summary Monthly
     public function getMonthlySummary(Request $request) {
         $startDate = $request->input('start_date', '2024-01-01'); // default start date
         $endDate = $request->input('end_date', '2024-12-31'); // default end date
 
         try {
-            $results = DB::table('lvmdp_hours')
+            $results = DB::table('lvmdp_days')
                 ->select(
                     DB::raw('DATE_TRUNC(\'month\', tanggal) as month_year'),
                     DB::raw('SUM(ttlexp_actven) as ttlmonth_energy')
@@ -57,6 +57,7 @@ class lvmdpController extends Controller
         }
     }
 
+    // Get Summary Daily from lvmdp_days
     public function getDailySummary(Request $request) {
         $results = DB::table('lvmdp_days')
             ->select(
