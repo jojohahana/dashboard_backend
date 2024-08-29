@@ -72,4 +72,29 @@ class lvmdpController extends Controller
         return response()->json($results);
     }
 
+    // Get Summary Shift
+    public function getShiftSummary(Request $request) {
+        try {
+            $results = DB::table('lvmdp_hours')
+                ->select(
+                    DB::raw("
+                        CASE
+                            WHEN (jam >= '07:00:00' AND jam < '15:00:01') THEN 'Shift 1'
+                            WHEN (jam > '15:00:00' AND jam < '23:00:01') THEN 'Shift 2'
+                            ELSE 'Shift 3'
+                        END AS shift
+                    "),
+                    DB::raw('SUM(ttlexp_actven) as total_energy')
+                )
+                ->groupBy('shift')
+                ->orderBy('shift')
+                ->get();
+
+            return response()->json($results);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching shift summary:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'An error occurred while fetching the shift summary.'], 500);
+        }
+    }
+
 }

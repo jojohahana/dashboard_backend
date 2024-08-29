@@ -20,4 +20,5 @@ Route::controller(lvmdpController::class)->group(function () {
     Route::get('/summary', 'getSummary');
     Route::get('/monthly-summary', 'getMonthlySummary');
     Route::get('/daily-summary', 'getDailySummary');
+    Route::get('/shift-summary', 'getShiftSummary');
 });
