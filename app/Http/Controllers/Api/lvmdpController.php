@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\LvmdpHour;
 use App\Model\LvmdpDays;
 
+
 class lvmdpController extends Controller
 {
     public function getSummary(Request $request) {
