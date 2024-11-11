@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\DummyLvmdp;
 use App\Models\Cubical;
+use Illuminate\Support\Carbon;
+
 
 class VPSController extends Controller
 {
@@ -182,14 +184,86 @@ class VPSController extends Controller
         $cost_wbp_value = $WBP_value * $WBP_rate;
         $cost_lwbp_value = $LWBP_value * $LWBP_rate;
         $total_value_in_rupiah = $cost_wbp_value + $cost_lwbp_value;
+        $total_value = $WBP_value + $LWBP_value;
 
         // Prepare the response
         return response()->json([
             'WBP_value' => $WBP_value,
             'LWBP_value' => $LWBP_value,
+            'total_value' => $total_value,
             'cost_wbp_value' => $cost_wbp_value,
             'cost_lwbp_value' => $cost_lwbp_value,
             'total_value_in_rupiah' => $total_value_in_rupiah,
         ], 200, [], JSON_PRETTY_PRINT);
     }
+
+
+    public function getConsDaily() {
+        $results = DB::table('cubical')
+            ->select(
+                'Tanggal_save',
+                DB::raw("SUM(CASE WHEN Jam_save BETWEEN '18:59:59' AND '22:59:59' THEN gap_value ELSE 0 END) AS WBP_value"),
+                DB::raw("SUM(CASE WHEN Jam_save NOT BETWEEN '18:59:59' AND '22:59:59' THEN gap_value ELSE 0 END) AS LWBP_value"),
+                DB::raw("SUM(CASE WHEN Jam_save BETWEEN '18:59:59' AND '22:59:59' THEN gap_value ELSE 0 END) * 1553.67 AS cost_wbp_value"),
+                DB::raw("SUM(CASE WHEN Jam_save NOT BETWEEN '18:59:59' AND '22:59:59' THEN gap_value ELSE 0 END) * 1035.78 AS cost_lwbp_value")
+            )
+            ->whereDate('Tanggal_save', '>=', Carbon::now()->subDays(30)) // get data from the last 30 days
+            ->groupBy('Tanggal_save')
+            ->get();
+
+        return response()->json($results);
+    }
+
+
+    public function getDailyEnergyConsumption()
+{
+    try {
+        // Define rates for WBP and LWBP
+        $wbpRate = 1553.67;
+        $lwbpRate = 1035.78;
+
+        // Step 1: Fetch previous day's last recorded energy for '23:59:59'
+        $previousDayEndEnergy = DB::table('cubical')
+            ->where('Tanggal_save', Carbon::now()->subDays(2)->toDateString())
+            ->where('Jam_save', '23:59:59')
+            ->value('Total_active_Energy');
+
+        if ($previousDayEndEnergy === null) {
+            $previousDayEndEnergy = 0; // Set a default value if no previous energy is found
+        }
+
+        // Step 2: Prepare subquery to calculate the previous energy and gap_value
+        $gapData = DB::table('cubical')
+            ->select(
+                'Tanggal_save',
+                'Jam_save',
+                'Total_active_Energy',
+                DB::raw("LAG(\"Total_active_Energy\", 1, $previousDayEndEnergy) OVER (ORDER BY \"Tanggal_save\", \"Jam_save\") AS previous_energy"),
+                DB::raw("\"Total_active_Energy\" - COALESCE(LAG(\"Total_active_Energy\", 1, $previousDayEndEnergy) OVER (ORDER BY \"Tanggal_save\", \"Jam_save\"), $previousDayEndEnergy) AS gap_value")
+            )
+            ->whereRaw('"Tanggal_save" >= CURRENT_DATE - INTERVAL \'7 day\''); // No need for toBase()
+
+        // Step 3: Aggregate the data
+        $data = DB::table(DB::raw("({$gapData->toSql()}) AS gap_calculations"))
+            ->mergeBindings($gapData) // Merge bindings from the subquery
+            ->select(
+                'Tanggal_save',
+                DB::raw('SUM(CASE WHEN "Jam_save" BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) AS WBP_value'),
+                DB::raw('SUM(CASE WHEN "Jam_save" NOT BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) AS LWBP_value'),
+                DB::raw('SUM(CASE WHEN "Jam_save" BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) * ' . $wbpRate . ' AS cost_wbp_value'),
+                DB::raw('SUM(CASE WHEN "Jam_save" NOT BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) * ' . $lwbpRate . ' AS cost_lwbp_value'),
+                DB::raw('SUM(CASE WHEN "Jam_save" BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) + SUM(CASE WHEN "Jam_save" NOT BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) AS total_value'),
+                DB::raw('SUM(CASE WHEN "Jam_save" BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) * ' . $wbpRate . ' + SUM(CASE WHEN "Jam_save" NOT BETWEEN \'18:59:59\' AND \'22:59:59\' THEN gap_value ELSE 0 END) * ' . $lwbpRate . ' AS total_cost')
+            )
+            ->groupBy('Tanggal_save')
+            ->orderBy('Tanggal_save')
+            ->get();
+
+        return response()->json($data);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
 }
