@@ -31,6 +31,7 @@ Route::controller(VPSController::class)->group(function () {
     Route::get('/gettrial', 'getCostRupiah');
     Route::get('/getconsday', 'getConsDaily');
     Route::get('/getconsdaily', 'getDailyEnergyConsumption');
+    Route::get('/getdaily', 'getDailyCons');
     // Route::get('/summary/{date}', 'getSummaryByDate');
     // Route::get('/gapvalcons', 'getValueGapCons');
     // Route::get('/gapvalcost', 'getValueGapInRupiah');
