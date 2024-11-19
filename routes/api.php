@@ -28,7 +28,8 @@ Route::controller(lvmdpController::class)->group(function () {
 
 Route::controller(VPSController::class)->group(function () {
     Route::get('/getvalcost', 'getCostConsumptionEnergy');
-    Route::get('/gettrial', 'getCostRupiah');
+    Route::get('/gettrial', 'getCostRupiahToday');
+    // Route::get('/gettrial', 'getCostRupiah');
     Route::get('/getconsday', 'getConsDaily');
     Route::get('/getconsdaily', 'getDailyEnergyConsumption');
     Route::get('/getdaily', 'getDailyCons');
