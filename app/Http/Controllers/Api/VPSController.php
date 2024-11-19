@@ -264,6 +264,7 @@ class VPSController extends Controller
     }
 
 
+// New Version
     public function getDailyCons()
 {
     try {
