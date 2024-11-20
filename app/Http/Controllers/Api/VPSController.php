@@ -361,6 +361,62 @@ class VPSController extends Controller
     // }
 
 
+    public function getTodayEnergyData()
+{
+    try {
+        // Step 1: Fetch the previous day's last energy value
+        $previousEnergyEnd = DB::table('cubical')
+            ->where('Tanggal_save', Carbon::now()->subDay()->toDateString())
+            ->orderBy('Jam_save', 'desc')
+            ->value('Total_active_Energy');
+
+        // Default to 0 if no previous energy value is found
+        $previousEnergyEnd = $previousEnergyEnd ?? 0;
+
+        // Step 2: Fetch today's energy data with the previous energy calculated
+        $energyData = DB::table('cubical')
+            ->select(
+                'Tanggal_save',
+                'Jam_save',
+                'Total_active_Energy',
+                DB::raw("COALESCE(LAG(\"Total_active_Energy\") OVER (ORDER BY \"Jam_save\"), $previousEnergyEnd) AS previous_energy"),
+                DB::raw("\"Total_active_Energy\" - COALESCE(LAG(\"Total_active_Energy\") OVER (ORDER BY \"Jam_save\"), $previousEnergyEnd) AS gap_value")
+            )
+            ->where('Tanggal_save', Carbon::now()->toDateString())
+            ->get();
+
+        // Step 3: Calculate total gap value and total cost value
+        $totalGapValue = 0;
+        $totalCostValue = 0;
+
+        foreach ($energyData as $row) {
+            $gapValue = $row->gap_value;
+
+            $totalGapValue += $gapValue;
+
+            // Calculate cost based on time
+            if ($row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59') {
+                $totalCostValue += $gapValue * 1553.67; // Peak hours rate
+            } else {
+                $totalCostValue += $gapValue * 1035.78; // Off-peak rate
+            }
+        }
+
+        // Round the total cost value
+        $totalCostValue = round($totalCostValue);
+
+        // Step 4: Return the aggregated result as JSON
+        return response()->json([
+            'total_gap_value' => $totalGapValue,
+            'total_cost_value' => $totalCostValue,
+        ], 200, [], JSON_UNESCAPED_SLASHES);
+    } catch (\Exception $e) {
+        // Handle exceptions and return error response
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
     //241118 Check Value Cons Today aneh teruss
     public function getCostRupiahToday() {
         try {
