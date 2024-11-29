@@ -6,6 +6,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\lvmdpController;
 use App\Http\Controllers\Api\VPSController;
 
+Route::controller(VPSController::class)->group(function () {
+    Route::get('/getvalcost', 'getCostConsumptionEnergy');
+    Route::get('/getvaltoday', 'getTodayEnergyData');
+    Route::get('/getconsday', 'getConsDaily');
+    Route::get('/getconsdaily', 'getDailyEnergyConsumption');
+    Route::get('/getdaily', 'getDailyCons');
+    Route::get('/getdayebeam', 'getTodayEbeam');
+    Route::get('/getdayeto', 'getTodayEto');
+});
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware(Authenticate::using('sanctum'));
@@ -26,14 +36,3 @@ Route::controller(lvmdpController::class)->group(function () {
     Route::get('/dummy-lvmdp1', 'getDummyVPS');
 });
 
-Route::controller(VPSController::class)->group(function () {
-    Route::get('/getvalcost', 'getCostConsumptionEnergy');
-    Route::get('/getvaltoday', 'getTodayEnergyData');
-    // Route::get('/gettrial', 'getCostRupiah');
-    Route::get('/getconsday', 'getConsDaily');
-    Route::get('/getconsdaily', 'getDailyEnergyConsumption');
-    Route::get('/getdaily', 'getDailyCons');
-    // Route::get('/summary/{date}', 'getSummaryByDate');
-    // Route::get('/gapvalcons', 'getValueGapCons');
-    // Route::get('/gapvalcost', 'getValueGapInRupiah');
-});
