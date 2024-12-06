@@ -16,6 +16,10 @@ Route::controller(VPSController::class)->group(function () {
     Route::get('/getdayeto', 'getTodayEto');
 });
 
+
+
+
+// ====== TRIAL EVENT =======
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware(Authenticate::using('sanctum'));

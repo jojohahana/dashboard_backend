@@ -261,7 +261,6 @@ class VPSController extends Controller
     }
 
 
-
     public function getTodayEnergyData() {
         try {
             // Step 1: Fetch the previous day's last energy value
