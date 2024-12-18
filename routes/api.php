@@ -14,6 +14,7 @@ Route::controller(VPSController::class)->group(function () {
     Route::get('/getdaily', 'getDailyCons');
     Route::get('/getdayebeam', 'getTodayEbeam');
     Route::get('/getdayeto', 'getTodayEto');
+    Route::get('/getdayhvone', 'getTodayHVAC1');
 });
 
 

@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Carbon;
 use App\Models\DummyLvmdp;
 use App\Models\Cubical;
 use App\Models\Eto;
 use App\Models\Ebeam;
-use Illuminate\Support\Carbon;
+use App\Models\HVAC1_chiller_pump;
+use App\Models\HVAC1_chiller;
 
 
 class VPSController extends Controller
@@ -471,6 +474,67 @@ class VPSController extends Controller
         }
     }
 
+    public function getTodayHVAC1()
+    {
+        try {
+            // Get the previous day's energy values from hvac1_chiller
+            $previousEnergyChiller = Hvac1Chiller::whereDate('Tanggal_save', now()->subDay()->toDateString())
+                ->orderByDesc('Jam_save')
+                ->value(DB::raw('COALESCE(MAX("Total_active_Energy"), 0)'));
+
+            // Get the previous day's energy values from hvac1_chiller_pump
+            $previousEnergyChillerPump = Hvac1ChillerPump::whereDate('Tanggal_save', now()->subDay()->toDateString())
+                ->orderByDesc('Jam_save')
+                ->value(DB::raw('COALESCE(MAX("Total_active_Energy"), 0)'));
+
+            // Get today's data for both tables
+            $chillerData = Hvac1Chiller::whereDate('Tanggal_save', now()->toDateString())->get();
+            $chillerPumpData = Hvac1ChillerPump::whereDate('Tanggal_save', now()->toDateString())->get();
+
+            // Initialize total gap and total cost values
+            $totalGapValue = 0;
+            $totalCostValue = 0;
+
+            // Process chiller data
+            foreach ($chillerData as $index => $chiller) {
+                $previousEnergy = $index === 0 ? $previousEnergyChiller : $chillerData[$index - 1]->Total_active_Energy;
+                $gapValue = $chiller->Total_active_Energy - $previousEnergy;
+                $totalGapValue += $gapValue;
+
+                // Calculate cost for the given period
+                $costRate = ($chiller->Jam_save >= '17:59:59' && $chiller->Jam_save <= '21:59:59') ? 1553.67 : 1035.78;
+                $totalCostValue += $gapValue * $costRate;
+            }
+
+            // Process chiller pump data
+            foreach ($chillerPumpData as $index => $chillerPump) {
+                $previousEnergy = $index === 0 ? $previousEnergyChillerPump : $chillerPumpData[$index - 1]->Total_active_Energy;
+                $gapValue = $chillerPump->Total_active_Energy - $previousEnergy;
+                $totalGapValue += $gapValue;
+
+                // Calculate cost for the given period
+                $costRate = ($chillerPump->Jam_save >= '17:59:59' && $chillerPump->Jam_save <= '21:59:59') ? 1553.67 : 1035.78;
+                $totalCostValue += $gapValue * $costRate;
+            }
+
+            // Round the total cost value to 2 decimal places
+            $totalCostValue = round($totalCostValue, 2);
+
+            // Return the result in JSON format
+            return response()->json([
+                'total_gap_value' => $totalGapValue,
+                'total_cost_value' => $totalCostValue,
+            ]);
+
+        } catch (\Exception $e) {
+            // Log the error and return a generic error message
+            Log::error('Error in getTodayHVAC1: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An error occurred while processing the request.',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 
 }
