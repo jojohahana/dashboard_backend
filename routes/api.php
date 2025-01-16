@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\lvmdpController;
 use App\Http\Controllers\Api\VPSController;
+use App\Http\Controllers\Api\DeyeController;
 
 Route::controller(VPSController::class)->group(function () {
     Route::get('/getvalcost', 'getCostConsumptionEnergy');
@@ -17,7 +18,9 @@ Route::controller(VPSController::class)->group(function () {
     Route::get('/getdayhvone', 'getTodayHVAC1');
 });
 
-
+Route::controller(DeyeController::class)->group(function () {
+    Route::get('/inverter-devices', 'getInverterDevices');
+});
 
 
 // ====== TRIAL EVENT =======
