@@ -31,6 +31,8 @@ Route::controller(AreaController::class)->group(function (){
     Route::get('/compresone', 'getTodayCompressor1');
     Route::get('/comprestwo', 'getTodayCompressor2');
     Route::get('/compresthree', 'getTodayCompressor3');
+    Route::get('/lvmdpone', 'getTodayLvmdp1');
+    Route::get('/lvmdptwo', 'getTodayLvmdp2');
     Route::get('/boiler', 'getTodayBoiler');
     Route::get('/cubical', 'getTodayCubical');
     Route::get('/ebeam', 'getTodayEbeam');
