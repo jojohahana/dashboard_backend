@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\lvmdpController;
 use App\Http\Controllers\Api\VPSController;
 use App\Http\Controllers\Api\DeyeController;
+use App\Http\Controllers\Api\AreaController;
 
 Route::controller(VPSController::class)->group(function () {
     Route::get('/getvalcost', 'getCostConsumptionEnergy');
@@ -13,11 +14,28 @@ Route::controller(VPSController::class)->group(function () {
     Route::get('/getconsday', 'getConsDaily');
     Route::get('/getconsdaily', 'getDailyEnergyConsumption');
     Route::get('/getdaily', 'getDailyCons');
-    Route::get('/getdayebeam', 'getTodayEbeam');
-    Route::get('/getdayeto', 'getTodayEto');
+    // Route::get('/getdayebeam', 'getTodayEbeam');
+    // Route::get('/getdayeto', 'getTodayEto');
+
+
+});
+
+Route::controller(AreaController::class)->group(function (){
     Route::get('/hvacone', 'getTodayHVAC1');
     Route::get('/hvactwo', 'getTodayHVAC2');
     Route::get('/hvacthree', 'getTodayHVAC3');
+    Route::get('/injectone', 'getTodayInjection1');
+    Route::get('/injecttwo', 'getTodayInjection2');
+    Route::get('/injectthree', 'getTodayInjection3');
+    Route::get('/injectfour', 'getTodayInjection4');
+    Route::get('/compresone', 'getTodayCompressor1');
+    Route::get('/comprestwo', 'getTodayCompressor2');
+    Route::get('/compresthree', 'getTodayCompressor3');
+    Route::get('/boiler', 'getTodayBoiler');
+    Route::get('/cubical', 'getTodayCubical');
+    Route::get('/ebeam', 'getTodayEbeam');
+    Route::get('/eto', 'getTodayEto');
+    Route::get('/numedik', 'getTodayNumedik');
 
 });
 

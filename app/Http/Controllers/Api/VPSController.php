@@ -474,153 +474,153 @@ class VPSController extends Controller
         }
     }
 
-    public function getTodayHVAC1() {
-        $currentDate = now()->toDateString();
-        $yesterday = now()->subDay()->toDateString();
+    // public function getTodayHVAC1() {
+    //     $currentDate = now()->toDateString();
+    //     $yesterday = now()->subDay()->toDateString();
 
-        // Define an array of tables
-        $tables = [
-            'hvac1_chiller',
-            'hvac1_chiller_pump',
-            'hvac1_fan_ahu1',
-            'hvac1_fan_ahu2',
-            'hvac1_fan_ahu3',
-            'hvac1_heater_ahu1',
-            'hvac1_heater_ahu2',
-            'hvac1_heater_ahu3',
-        ];
+    //     // Define an array of tables
+    //     $tables = [
+    //         'hvac1_chiller',
+    //         'hvac1_chiller_pump',
+    //         'hvac1_fan_ahu1',
+    //         'hvac1_fan_ahu2',
+    //         'hvac1_fan_ahu3',
+    //         'hvac1_heater_ahu1',
+    //         'hvac1_heater_ahu2',
+    //         'hvac1_heater_ahu3',
+    //     ];
 
-        $combinedData = collect();
+    //     $combinedData = collect();
 
-        foreach ($tables as $table) {
-            $data = DB::table($table)
-                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
-                ->where('Tanggal_save', $currentDate)
-                ->get();
+    //     foreach ($tables as $table) {
+    //         $data = DB::table($table)
+    //             ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+    //             ->where('Tanggal_save', $currentDate)
+    //             ->get();
 
-            $combinedData = $combinedData->merge($data);
-        }
+    //         $combinedData = $combinedData->merge($data);
+    //     }
 
-        // Process combined data
-        $result = $combinedData
-            ->groupBy('Tanggal_save')
-            ->map(function ($group) {
-                $totalGapValue = $group->sum(function ($row) {
-                    return $row->Total_active_Energy - $row->previous_energy;
-                });
+    //     // Process combined data
+    //     $result = $combinedData
+    //         ->groupBy('Tanggal_save')
+    //         ->map(function ($group) {
+    //             $totalGapValue = $group->sum(function ($row) {
+    //                 return $row->Total_active_Energy - $row->previous_energy;
+    //             });
 
-                $totalCostValue = $group->sum(function ($row) {
-                    $gap = $row->Total_active_Energy - $row->previous_energy;
-                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
-                        ? $gap * 1553.67
-                        : $gap * 1035.78;
-                });
+    //             $totalCostValue = $group->sum(function ($row) {
+    //                 $gap = $row->Total_active_Energy - $row->previous_energy;
+    //                 return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+    //                     ? $gap * 1553.67
+    //                     : $gap * 1035.78;
+    //             });
 
-                return [
-                    'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
-                ];
-            });
+    //             return [
+    //                 'total_gap_value' => round($totalGapValue),
+    //                 'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+    //             ];
+    //         });
 
-        return response()->json($result);
-    }
+    //     return response()->json($result);
+    // }
 
-    public function getTodayHVAC2() {
-        $currentDate = now()->toDateString();
-        $yesterday = now()->subDay()->toDateString();
+    // public function getTodayHVAC2() {
+    //     $currentDate = now()->toDateString();
+    //     $yesterday = now()->subDay()->toDateString();
 
-        // Define an array of tables
-        $tables = [
-            'hvac2_chiller',
-            'hvac2_chiller_pump',
-            'hvac2_fan_ahu_ivd',
-        ];
+    //     // Define an array of tables
+    //     $tables = [
+    //         'hvac2_chiller',
+    //         'hvac2_chiller_pump',
+    //         'hvac2_fan_ahu_ivd',
+    //     ];
 
-        $combinedData = collect();
+    //     $combinedData = collect();
 
-        foreach ($tables as $table) {
-            $data = DB::table($table)
-                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
-                ->where('Tanggal_save', $currentDate)
-                ->get();
+    //     foreach ($tables as $table) {
+    //         $data = DB::table($table)
+    //             ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+    //             ->where('Tanggal_save', $currentDate)
+    //             ->get();
 
-            $combinedData = $combinedData->merge($data);
-        }
+    //         $combinedData = $combinedData->merge($data);
+    //     }
 
-        // Process combined data
-        $result = $combinedData
-            ->groupBy('Tanggal_save')
-            ->map(function ($group) {
-                $totalGapValue = $group->sum(function ($row) {
-                    return $row->Total_active_Energy - $row->previous_energy;
-                });
+    //     // Process combined data
+    //     $result = $combinedData
+    //         ->groupBy('Tanggal_save')
+    //         ->map(function ($group) {
+    //             $totalGapValue = $group->sum(function ($row) {
+    //                 return $row->Total_active_Energy - $row->previous_energy;
+    //             });
 
-                $totalCostValue = $group->sum(function ($row) {
-                    $gap = $row->Total_active_Energy - $row->previous_energy;
-                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
-                        ? $gap * 1553.67
-                        : $gap * 1035.78;
-                });
+    //             $totalCostValue = $group->sum(function ($row) {
+    //                 $gap = $row->Total_active_Energy - $row->previous_energy;
+    //                 return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+    //                     ? $gap * 1553.67
+    //                     : $gap * 1035.78;
+    //             });
 
-                return [
-                    'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
-                ];
-            });
+    //             return [
+    //                 'total_gap_value' => round($totalGapValue),
+    //                 'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+    //             ];
+    //         });
 
-        return response()->json($result);
-    }
+    //     return response()->json($result);
+    // }
 
-    public function getTodayHVAC3() {
-        $currentDate = now()->toDateString();
-        $yesterday = now()->subDay()->toDateString();
+    // public function getTodayHVAC3() {
+    //     $currentDate = now()->toDateString();
+    //     $yesterday = now()->subDay()->toDateString();
 
-        // Define an array of tables
-        $tables = [
-            'hvac3_chiller',
-            'hvac3_chiller_pump',
-            'hvac3_fan_ahu1',
-            'hvac3_fan_ahu2',
-            'hvac3_fan_ahu3',
-            'hvac3_heater_ahu1',
-            'hvac3_heater_ahu2',
-            'hvac3_heater_ahu3',
-        ];
+    //     // Define an array of tables
+    //     $tables = [
+    //         'hvac3_chiller',
+    //         'hvac3_chiller_pump',
+    //         'hvac3_fan_ahu1',
+    //         'hvac3_fan_ahu2',
+    //         'hvac3_fan_ahu3',
+    //         'hvac3_heater_ahu1',
+    //         'hvac3_heater_ahu2',
+    //         'hvac3_heater_ahu3',
+    //     ];
 
-        $combinedData = collect();
+    //     $combinedData = collect();
 
-        foreach ($tables as $table) {
-            $data = DB::table($table)
-                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
-                ->where('Tanggal_save', $currentDate)
-                ->get();
+    //     foreach ($tables as $table) {
+    //         $data = DB::table($table)
+    //             ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+    //             ->where('Tanggal_save', $currentDate)
+    //             ->get();
 
-            $combinedData = $combinedData->merge($data);
-        }
+    //         $combinedData = $combinedData->merge($data);
+    //     }
 
-        // Process combined data
-        $result = $combinedData
-            ->groupBy('Tanggal_save')
-            ->map(function ($group) {
-                $totalGapValue = $group->sum(function ($row) {
-                    return $row->Total_active_Energy - $row->previous_energy;
-                });
+    //     // Process combined data
+    //     $result = $combinedData
+    //         ->groupBy('Tanggal_save')
+    //         ->map(function ($group) {
+    //             $totalGapValue = $group->sum(function ($row) {
+    //                 return $row->Total_active_Energy - $row->previous_energy;
+    //             });
 
-                $totalCostValue = $group->sum(function ($row) {
-                    $gap = $row->Total_active_Energy - $row->previous_energy;
-                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
-                        ? $gap * 1553.67
-                        : $gap * 1035.78;
-                });
+    //             $totalCostValue = $group->sum(function ($row) {
+    //                 $gap = $row->Total_active_Energy - $row->previous_energy;
+    //                 return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+    //                     ? $gap * 1553.67
+    //                     : $gap * 1035.78;
+    //             });
 
-                return [
-                    'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
-                ];
-            });
+    //             return [
+    //                 'total_gap_value' => round($totalGapValue),
+    //                 'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+    //             ];
+    //         });
 
-        return response()->json($result);
-    }
+    //     return response()->json($result);
+    // }
 
 
 }
