@@ -474,66 +474,152 @@ class VPSController extends Controller
         }
     }
 
-    public function getTodayHVAC1()
-    {
-        try {
-            // Get the previous day's energy values from hvac1_chiller
-            $previousEnergyChiller = Hvac1Chiller::whereDate('Tanggal_save', now()->subDay()->toDateString())
-                ->orderByDesc('Jam_save')
-                ->value(DB::raw('COALESCE(MAX("Total_active_Energy"), 0)'));
+    public function getTodayHVAC1() {
+        $currentDate = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
 
-            // Get the previous day's energy values from hvac1_chiller_pump
-            $previousEnergyChillerPump = Hvac1ChillerPump::whereDate('Tanggal_save', now()->subDay()->toDateString())
-                ->orderByDesc('Jam_save')
-                ->value(DB::raw('COALESCE(MAX("Total_active_Energy"), 0)'));
+        // Define an array of tables
+        $tables = [
+            'hvac1_chiller',
+            'hvac1_chiller_pump',
+            'hvac1_fan_ahu1',
+            'hvac1_fan_ahu2',
+            'hvac1_fan_ahu3',
+            'hvac1_heater_ahu1',
+            'hvac1_heater_ahu2',
+            'hvac1_heater_ahu3',
+        ];
 
-            // Get today's data for both tables
-            $chillerData = Hvac1Chiller::whereDate('Tanggal_save', now()->toDateString())->get();
-            $chillerPumpData = Hvac1ChillerPump::whereDate('Tanggal_save', now()->toDateString())->get();
+        $combinedData = collect();
 
-            // Initialize total gap and total cost values
-            $totalGapValue = 0;
-            $totalCostValue = 0;
+        foreach ($tables as $table) {
+            $data = DB::table($table)
+                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+                ->where('Tanggal_save', $currentDate)
+                ->get();
 
-            // Process chiller data
-            foreach ($chillerData as $index => $chiller) {
-                $previousEnergy = $index === 0 ? $previousEnergyChiller : $chillerData[$index - 1]->Total_active_Energy;
-                $gapValue = $chiller->Total_active_Energy - $previousEnergy;
-                $totalGapValue += $gapValue;
-
-                // Calculate cost for the given period
-                $costRate = ($chiller->Jam_save >= '17:59:59' && $chiller->Jam_save <= '21:59:59') ? 1553.67 : 1035.78;
-                $totalCostValue += $gapValue * $costRate;
-            }
-
-            // Process chiller pump data
-            foreach ($chillerPumpData as $index => $chillerPump) {
-                $previousEnergy = $index === 0 ? $previousEnergyChillerPump : $chillerPumpData[$index - 1]->Total_active_Energy;
-                $gapValue = $chillerPump->Total_active_Energy - $previousEnergy;
-                $totalGapValue += $gapValue;
-
-                // Calculate cost for the given period
-                $costRate = ($chillerPump->Jam_save >= '17:59:59' && $chillerPump->Jam_save <= '21:59:59') ? 1553.67 : 1035.78;
-                $totalCostValue += $gapValue * $costRate;
-            }
-
-            // Round the total cost value to 2 decimal places
-            $totalCostValue = round($totalCostValue, 2);
-
-            // Return the result in JSON format
-            return response()->json([
-                'total_gap_value' => $totalGapValue,
-                'total_cost_value' => $totalCostValue,
-            ]);
-
-        } catch (\Exception $e) {
-            // Log the error and return a generic error message
-            Log::error('Error in getTodayHVAC1: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'An error occurred while processing the request.',
-                'details' => $e->getMessage(),
-            ], 500);
+            $combinedData = $combinedData->merge($data);
         }
+
+        // Process combined data
+        $result = $combinedData
+            ->groupBy('Tanggal_save')
+            ->map(function ($group) {
+                $totalGapValue = $group->sum(function ($row) {
+                    return $row->Total_active_Energy - $row->previous_energy;
+                });
+
+                $totalCostValue = $group->sum(function ($row) {
+                    $gap = $row->Total_active_Energy - $row->previous_energy;
+                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+                        ? $gap * 1553.67
+                        : $gap * 1035.78;
+                });
+
+                return [
+                    'total_gap_value' => round($totalGapValue),
+                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                ];
+            });
+
+        return response()->json($result);
+    }
+
+    public function getTodayHVAC2() {
+        $currentDate = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
+
+        // Define an array of tables
+        $tables = [
+            'hvac2_chiller',
+            'hvac2_chiller_pump',
+            'hvac2_fan_ahu_ivd',
+        ];
+
+        $combinedData = collect();
+
+        foreach ($tables as $table) {
+            $data = DB::table($table)
+                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+                ->where('Tanggal_save', $currentDate)
+                ->get();
+
+            $combinedData = $combinedData->merge($data);
+        }
+
+        // Process combined data
+        $result = $combinedData
+            ->groupBy('Tanggal_save')
+            ->map(function ($group) {
+                $totalGapValue = $group->sum(function ($row) {
+                    return $row->Total_active_Energy - $row->previous_energy;
+                });
+
+                $totalCostValue = $group->sum(function ($row) {
+                    $gap = $row->Total_active_Energy - $row->previous_energy;
+                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+                        ? $gap * 1553.67
+                        : $gap * 1035.78;
+                });
+
+                return [
+                    'total_gap_value' => round($totalGapValue),
+                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                ];
+            });
+
+        return response()->json($result);
+    }
+
+    public function getTodayHVAC3() {
+        $currentDate = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
+
+        // Define an array of tables
+        $tables = [
+            'hvac3_chiller',
+            'hvac3_chiller_pump',
+            'hvac3_fan_ahu1',
+            'hvac3_fan_ahu2',
+            'hvac3_fan_ahu3',
+            'hvac3_heater_ahu1',
+            'hvac3_heater_ahu2',
+            'hvac3_heater_ahu3',
+        ];
+
+        $combinedData = collect();
+
+        foreach ($tables as $table) {
+            $data = DB::table($table)
+                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+                ->where('Tanggal_save', $currentDate)
+                ->get();
+
+            $combinedData = $combinedData->merge($data);
+        }
+
+        // Process combined data
+        $result = $combinedData
+            ->groupBy('Tanggal_save')
+            ->map(function ($group) {
+                $totalGapValue = $group->sum(function ($row) {
+                    return $row->Total_active_Energy - $row->previous_energy;
+                });
+
+                $totalCostValue = $group->sum(function ($row) {
+                    $gap = $row->Total_active_Energy - $row->previous_energy;
+                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+                        ? $gap * 1553.67
+                        : $gap * 1035.78;
+                });
+
+                return [
+                    'total_gap_value' => round($totalGapValue),
+                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                ];
+            });
+
+        return response()->json($result);
     }
 
 
