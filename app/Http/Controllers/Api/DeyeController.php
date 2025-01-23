@@ -3,61 +3,49 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\ApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Carbon\Carbon; // Import Carbon for date handling
 
 class DeyeController extends Controller
 {
-    protected $apiService;
+    public function getDeviceHistory(Request $request)
+    {
+        // Define the list of device serial numbers
+        $deviceSnList = [
+            "2404164849",
+            "2404164857",
+            "2404164854",
+            "2404164850",
+            "2404164862",
+            "2404164858"
+        ];
 
-    public function __construct(ApiService $apiService) {
-        $this->apiService = $apiService;
-    }
+        // Get today's date in the required format
+        $today = Carbon::now()->format('Y-m-d');
 
-    public function getDataToken(Request $request) {
-        try {
-            // Fetch token
-            $token = $this->apiService->getToken('plts.oji.2024@gmail.com', '60efbea8ae4e9d3b7260cb2bff82774c7874ab3f17dc36ac7082c7c7ad897979', '479f21864ecb3a9c72773145f34532d1');
+        // Prepare an array to hold the results
+        $results = [];
 
-            // Fetch data with the token
-            $data = $this->apiService->fetchData('desired-endpoint', $token, [
-                'param1' => $request->input('param1'),
-                'param2' => $request->input('param2'),
+        // Loop through each device serial number
+        foreach ($deviceSnList as $deviceSn) {
+            // Prepare the request to the external API
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsib2F1dGgyLXJlc291cmNlIl0sInVzZXJfbmFtZSI6IjBfcGx0cy5vamkuMjAyNEBnbWFpbC5jb21fMiIsInNjb3BlIjpbImFsbCJdLCJkZXRhaWwiOnsib3JnYW5pemF0aW9uSWQiOjAsInRvcEdyb3VwSWQiOm51bGwsImdyb3VwSWQiOm51bGwsInJvbGVJZCI6LTEsInVzZXJJZCI6MTI5OTczMjIsInZlcnNpb24iOjEwMDAsImlkZW50aWZpZXIiOiJwbHRzLm9qaS4yMDI0QGdtYWlsLmNvbSIsImlkZW50aXR5VHlwZSI6MiwibWRjIjoidWMiLCJhcHBJZCI6IjIwMjUwMTEwNjk3NTAwMiIsIm1mYVN0YXR1cyI6bnVsbCwidGVuYW50IjoiRGV5ZSJ9LCJleHAiOjE3NDE2Nzc4NDUsIm1kYyI6InVjIiwiYXV0aG9yaXRpZXMiOlsiYWxsIl0sImp0aSI6Ijk3NTRlZGIwLWQxMTYtNGZkMS1hZThhLTMyZmZkODM0MDcxNyIsImNsaWVudF9pZCI6InRlc3QifQ.HzLodCpaEkKLyyge1DmylQ2sS9_qSoEwRDjHd51RidJf_2Osh2pv-Vej1hAKakPnuZpqFN7Twnkr_3SlIPqIJ7wfhMRusXedai2wwcqQp4pylhytI2LJGW5X4arvB5oU0rHkqGEE27cEyEoqHFftHV6_hh5Domkr_L5Ry-jQyK90vKKi6LywwoYhnIiqqo477Ylj2W7PzIdF6MwEEKY004zxDi3nnqC7dodMKtWB3vSFWCeFKkqwcxes2HNJgc9BEqdX59NWs0WWeqAb8TbToKRTxfMCGkY-ROB7kyQHKclTHnrDvCu4WkswDO-Lppca4rQq8DYcA-hras7gaBbpxQ', // Replace with your actual token
+                'Content-Type' => 'application/json',
+            ])->post('https://eu1-developer.deyecloud.com/v1.0/device/history', [
+                'deviceSn' => $deviceSn, // Use the current device serial number
+                'startAt' => $today,     // Use today's date for startAt
+                'endAt' => $today,       // Use today's date for endAt
+                'granularity' => 1,
+                'measurePoints' => ['TotalConsumption'],
             ]);
 
-            return response()->json($data);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            // Collect the response for each device
+            $results[] = $response->json(); // Store the response
         }
-    }
 
-    public function getInverterDevices(Request $request) {
-        try {
-            // Get the token
-            $token = $this->apiService->getToken();
-
-            // Fetch station data
-            $response = $this->apiService->fetchStationListWithDevice($token);
-
-            // Filter deviceSn where deviceType = "INVERTER"
-            $filteredDeviceSn = [];
-            foreach ($response['stationList'] as $station) {
-                foreach ($station['deviceListItems'] as $device) {
-                    if ($device['deviceType'] === 'INVERTER') {
-                        $filteredDeviceSn[] = $device['deviceSn'];
-                    }
-                }
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => $filteredDeviceSn,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        // Return the aggregated results
+        return response()->json($results);
     }
 }

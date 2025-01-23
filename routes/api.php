@@ -46,7 +46,8 @@ Route::controller(AreaController::class)->group(function (){
 });
 
 Route::controller(DeyeController::class)->group(function () {
-    Route::get('/inverter-devices', 'getInverterDevices');
+    Route::post('/device/history', 'getDeviceHistory');
+    // Route::get('/inverter-devices', 'getInverterDevices');
 });
 
 
