@@ -40,7 +40,7 @@ class DeyeController extends Controller
                 'startAt' => $today,     // Use today's date for startAt
                 'endAt' => $today,       // Use today's date for endAt
                 'granularity' => 1,
-                'measurePoints' => ['TotalConsumption'],
+                'measurePoints' => ['TotalConsumptionPower'],
             ]);
 
             // Check if the response is successful
@@ -57,7 +57,7 @@ class DeyeController extends Controller
                     if ($dataPoint['time'] <= $currentEpochTime) {
                         // Extract the TotalConsumption value
                         foreach ($dataPoint['itemList'] as $item) {
-                            if ($item['key'] === 'TotalConsumption') {
+                            if ($item['key'] === 'TotalConsumptionPower') {
                                 // Update the latest consumption and time if this is the most recent
                                 $latestConsumption = $item['value'];
                                 $latestTime = $dataPoint['time'];
