@@ -70,7 +70,7 @@ class AreaController extends Controller
         $tables = [
             'hvac2_chiller',
             'hvac2_chiller_pump',
-            'hvac2_fan_ahu_ivd',
+            'hvac2_ahu_heater_ivd',
         ];
 
         $combinedData = collect();
@@ -175,7 +175,7 @@ class AreaController extends Controller
             'hvac1_heater_ahu3',
             'hvac2_chiller',
             'hvac2_chiller_pump',
-            'hvac2_fan_ahu_ivd',
+            'hvac2_ahu_heater_ivd',
             'hvac3_chiller',
             'hvac3_chiller_pump',
             'hvac3_fan_ahu1',

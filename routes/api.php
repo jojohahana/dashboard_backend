@@ -47,7 +47,7 @@ Route::controller(AreaController::class)->group(function (){
 
 Route::controller(DeyeController::class)->group(function () {
     Route::post('/device/detailhistory', 'getDeviceHistory');
-    Route::post('/device/sumhistory', 'getSumDeviceHistory');
+    Route::post('/device/sumhistory', 'getAmountDevice');
 });
 
 
