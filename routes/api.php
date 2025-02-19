@@ -42,6 +42,9 @@ Route::controller(AreaController::class)->group(function (){
     Route::get('/ebeam', 'getTodayEbeam');
     Route::get('/eto', 'getTodayEto');
     Route::get('/numedik', 'getTodayNumedik');
+    Route::get('/bbone', 'getTodayBb1');
+    Route::get('/bbtwo', 'getTodayBb2');
+    Route::get('/bb', 'getTodayBB');
 
 });
 

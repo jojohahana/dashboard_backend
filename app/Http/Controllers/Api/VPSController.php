@@ -518,7 +518,7 @@ class VPSController extends Controller
 
     //             return [
     //                 'total_gap_value' => round($totalGapValue),
-    //                 'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+    //                 'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
     //             ];
     //         });
 
@@ -564,7 +564,7 @@ class VPSController extends Controller
 
     //             return [
     //                 'total_gap_value' => round($totalGapValue),
-    //                 'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+    //                 'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
     //             ];
     //         });
 
@@ -615,7 +615,7 @@ class VPSController extends Controller
 
     //             return [
     //                 'total_gap_value' => round($totalGapValue),
-    //                 'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+    //                 'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
     //             ];
     //         });
 

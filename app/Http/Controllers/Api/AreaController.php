@@ -55,7 +55,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -101,7 +101,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -152,7 +152,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -214,7 +214,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -259,7 +259,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -303,7 +303,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -347,7 +347,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -391,7 +391,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -438,7 +438,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -483,7 +483,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -527,7 +527,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -571,7 +571,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -617,7 +617,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -662,7 +662,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -706,7 +706,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -751,7 +751,141 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
+                ];
+            });
+
+        return response()->json($result);
+    }
+
+    //BLOOD BAG
+    public function getTodayBb1() {
+        $currentDate = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
+
+        // Define an array of tables
+        $tables = [
+            'bb1',
+        ];
+
+        $combinedData = collect();
+
+        foreach ($tables as $table) {
+            $data = DB::table($table)
+                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+                ->where('Tanggal_save', $currentDate)
+                ->get();
+
+            $combinedData = $combinedData->merge($data);
+        }
+
+        // Process combined data
+        $result = $combinedData
+            ->groupBy('Tanggal_save')
+            ->map(function ($group) {
+                $totalGapValue = $group->sum(function ($row) {
+                    return $row->Total_active_Energy - $row->previous_energy;
+                });
+
+                $totalCostValue = $group->sum(function ($row) {
+                    $gap = $row->Total_active_Energy - $row->previous_energy;
+                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+                        ? $gap * 1553.67
+                        : $gap * 1035.78;
+                });
+
+                return [
+                    'total_gap_value' => round($totalGapValue),
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
+                ];
+            });
+
+        return response()->json($result);
+    }
+
+    public function getTodayBb2() {
+        $currentDate = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
+
+        // Define an array of tables
+        $tables = [
+            'bb2',
+        ];
+
+        $combinedData = collect();
+
+        foreach ($tables as $table) {
+            $data = DB::table($table)
+                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+                ->where('Tanggal_save', $currentDate)
+                ->get();
+
+            $combinedData = $combinedData->merge($data);
+        }
+
+        // Process combined data
+        $result = $combinedData
+            ->groupBy('Tanggal_save')
+            ->map(function ($group) {
+                $totalGapValue = $group->sum(function ($row) {
+                    return $row->Total_active_Energy - $row->previous_energy;
+                });
+
+                $totalCostValue = $group->sum(function ($row) {
+                    $gap = $row->Total_active_Energy - $row->previous_energy;
+                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+                        ? $gap * 1553.67
+                        : $gap * 1035.78;
+                });
+
+                return [
+                    'total_gap_value' => round($totalGapValue),
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
+                ];
+            });
+
+        return response()->json($result);
+    }
+
+    public function getTodayBB() {
+        $currentDate = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
+
+        // Define an array of tables
+        $tables = [
+            'bb1',
+            'bb2',
+        ];
+
+        $combinedData = collect();
+
+        foreach ($tables as $table) {
+            $data = DB::table($table)
+                ->selectRaw("'$table' as source_table, \"Tanggal_save\", \"Jam_save\", \"Total_active_Energy\", COALESCE(LAG(\"Total_active_Energy\") OVER (PARTITION BY \"Tanggal_save\" ORDER BY \"Jam_save\"), (SELECT \"Total_active_Energy\" FROM $table WHERE \"Tanggal_save\" = ? ORDER BY \"Jam_save\" DESC LIMIT 1)) AS previous_energy", [$yesterday])
+                ->where('Tanggal_save', $currentDate)
+                ->get();
+
+            $combinedData = $combinedData->merge($data);
+        }
+
+        // Process combined data
+        $result = $combinedData
+            ->groupBy('Tanggal_save')
+            ->map(function ($group) {
+                $totalGapValue = $group->sum(function ($row) {
+                    return $row->Total_active_Energy - $row->previous_energy;
+                });
+
+                $totalCostValue = $group->sum(function ($row) {
+                    $gap = $row->Total_active_Energy - $row->previous_energy;
+                    return $row->Jam_save >= '17:59:59' && $row->Jam_save <= '21:59:59'
+                        ? $gap * 1553.67
+                        : $gap * 1035.78;
+                });
+
+                return [
+                    'total_gap_value' => round($totalGapValue),
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -798,7 +932,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -842,7 +976,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -886,7 +1020,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -930,7 +1064,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
@@ -975,7 +1109,7 @@ class AreaController extends Controller
 
                 return [
                     'total_gap_value' => round($totalGapValue),
-                    'total_cost_value' => round($totalCostValue, 2), // Rounded to 2 decimal places
+                    'total_cost_value' => round($totalCostValue, 0), // Rounded to 2 decimal places
                 ];
             });
 
